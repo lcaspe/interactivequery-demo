@@ -4,14 +4,10 @@ import static org.apache.kafka.streams.StoreQueryParameters.fromNameAndType;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
-
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
 
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KeyValue;
@@ -21,9 +17,13 @@ import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.ReadOnlyWindowStore;
 import org.apache.kafka.streams.state.WindowStoreIterator;
-import org.glassfish.jersey.jackson.JacksonFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.zandro.interactivequerydemo.model.HostStoreInfo;
 import com.zandro.interactivequerydemo.model.KeyValueBean;
@@ -37,7 +37,9 @@ public class QueryService {
 	private final StreamsBuilderFactoryBean factoryBean;
 	private final MetadataService metadataService;
 	private final HostInfo hostInfo;
-	private final Client client = ClientBuilder.newBuilder().register(JacksonFeature.class).build();
+	private final RestTemplate restTemplate;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(QueryService.class);
 
 	/**
 	 * Get a key-value pair from a KeyValue Store
@@ -56,22 +58,22 @@ public class QueryService {
 		final ReadOnlyKeyValueStore<String, Long> store = factoryBean.getKafkaStreams()
 				.store(fromNameAndType(storeName, QueryableStoreTypes.keyValueStore()));
 		if (store == null) {
-			throw new NotFoundException();
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Store is null.");
 		}
 
 		// Get the value from the store
 		final Long value = store.get(key);
 		if (value == null) {
-			throw new NotFoundException();
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Value is null.");
 		}
 
 		return new KeyValueBean(key, value);
 	}
 
 	private KeyValueBean fetchByKey(final HostStoreInfo host, final String path) {
-		return client.target(String.format("http://%s:%d/%s", host.getHost(), host.getPort(), path))
-				.request(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<KeyValueBean>() {
-				});
+		String uri = String.format("http://%s:%d/%s", host.getHost(), host.getPort(), path);
+		LOGGER.info("Cannot find KeyValue from the local store. Fetching from remote instance: " + uri);
+		return restTemplate.getForObject(uri, KeyValueBean.class);
 	}
 
 	/**
@@ -115,7 +117,7 @@ public class QueryService {
 		final ReadOnlyWindowStore<String, Long> store = factoryBean.getKafkaStreams()
 				.store(fromNameAndType(storeName, QueryableStoreTypes.windowStore()));
 		if (store == null) {
-			throw new NotFoundException();
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Store is null.");
 		}
 
 		// fetch the window results for the given key and time range
@@ -182,14 +184,21 @@ public class QueryService {
 		final List<KeyValueBean> results = new ArrayList<>();
 		
 		// Apply the function, i.e., query the store
-		final KeyValueIterator<String, Long> range = rangeFunction.apply(store);
-
-		// Convert the results
-		while (range.hasNext()) {
-			final KeyValue<String, Long> next = range.next();
-			results.add(new KeyValueBean(next.key, next.value));
+		try (KeyValueIterator<String, Long> range = rangeFunction.apply(store)) {
+			
+			// Convert the results
+			while (range.hasNext()) {
+				final KeyValue<String, Long> next = range.next();
+				results.add(new KeyValueBean(next.key, next.value));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
+		// Sort KeyValueBean by key
+		Comparator<KeyValueBean> comparator = (o1, o2) -> o1.getKey().compareTo(o2.getKey());
+		Collections.sort(results, comparator);
+		
 		return results;
 	}
 

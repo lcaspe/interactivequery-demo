@@ -5,13 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.NotFoundException;
-
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KeyQueryMetadata;
 import org.apache.kafka.streams.state.StreamsMetadata;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.zandro.interactivequerydemo.model.HostStoreInfo;
 
@@ -63,7 +63,7 @@ public class MetadataService {
 		// potentially the value for key
 		final KeyQueryMetadata metadata = factoryBean.getKafkaStreams().queryMetadataForKey(store, key, serializer);
 		if (metadata == null) {
-			throw new NotFoundException();
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Metadata is null.");
 		}
 
 		return new HostStoreInfo(metadata.activeHost().host(), metadata.activeHost().port(),

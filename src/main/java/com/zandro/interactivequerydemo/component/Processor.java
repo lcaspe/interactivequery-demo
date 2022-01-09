@@ -1,4 +1,4 @@
-package com.zandro.interactivequerydemo.engine;
+package com.zandro.interactivequerydemo.component;
 
 import java.util.Arrays;
 

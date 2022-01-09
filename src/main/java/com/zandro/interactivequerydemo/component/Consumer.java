@@ -1,4 +1,4 @@
-package com.zandro.interactivequerydemo.engine;
+package com.zandro.interactivequerydemo.component;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
