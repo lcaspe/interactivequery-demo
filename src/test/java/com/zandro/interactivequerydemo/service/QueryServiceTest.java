@@ -55,11 +55,16 @@ public class QueryServiceTest {
 	public void testGetAllList() {
 		producer.send(new ProducerRecord<Integer, String>("words", 1, "testword"));
 
-		Awaitility.waitAtMost(360, TimeUnit.SECONDS).ignoreExceptions().untilAsserted(() -> {
+		//Awaitility.waitAtMost(360, TimeUnit.SECONDS).ignoreExceptions().untilAsserted(() -> {
 
 			List<KeyValueBean> list = underTest.allForStore("counts");
 			assertThat(list).isNotEmpty();
-		});
+		//});
+	}
+	
+	@Test
+	public void thisTestShouldFail() {
+		assertThat(4).isEqualTo(1 + 2);
 	}
 
 }
