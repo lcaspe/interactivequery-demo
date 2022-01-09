@@ -28,7 +28,7 @@ jobs:
           command: mvn test
 
       - store_test_results:
-          path: test-results
+          path: test-results/report.xml
 
       - store_artifacts:
           path: test-results
