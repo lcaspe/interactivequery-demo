@@ -32,6 +32,7 @@ jobs:
 
       - store_artifacts:
           path: test-results
+          destination: junit-test-xml
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
