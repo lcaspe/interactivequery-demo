@@ -21,5 +21,11 @@ public class Producer {
 		LOGGER.info(String.format("Producing => { key: %d, value: %s }", record.key(), record.value()));
 		template.send(record);
 	}
+	
+	public void publishForTestTopic(int key, String value) {
+		ProducerRecord<Integer, String> record = new ProducerRecord<Integer, String>("testTopic", key, value);
+		LOGGER.info("Producing to test topic => { key: {}, value: {} }", record.key(), record.value());
+		template.send(record);
+	}
 
 }

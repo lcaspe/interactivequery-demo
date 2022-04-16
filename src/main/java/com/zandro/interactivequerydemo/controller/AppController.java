@@ -29,6 +29,11 @@ public class AppController {
 	public void publish(@RequestParam("key") int key, @RequestParam("value") String value) {
 		producer.publish(key, value);
 	}
+	
+	@PostMapping("/publish-testTopic")
+	public void publishToTestTopic(@RequestParam("key") int key, @RequestParam("value") String value) {
+		producer.publishForTestTopic(key, value);
+	}
 
 	@GetMapping("/keyvalue/{storeName}/{key}")
 	public KeyValueBean getFromStoreByKey(@PathVariable String storeName, @PathVariable String key) {

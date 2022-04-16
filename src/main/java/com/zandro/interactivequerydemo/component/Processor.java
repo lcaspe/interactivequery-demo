@@ -25,7 +25,7 @@ public class Processor {
 		final Serde<String> stringSerde = Serdes.String();
 		final Serde<Long> longSerde = Serdes.Long();
 		
-		KeyValueBytesStoreSupplier stateStore = Stores.inMemoryKeyValueStore("counts");
+		KeyValueBytesStoreSupplier stateStore = Stores.persistentKeyValueStore("counts"); //Stores.inMemoryKeyValueStore("counts");
 		KStream<Integer, String> textLines = builder.stream("words", Consumed.with(integerSerde, stringSerde));
 		KTable<String, Long> wordCounts = textLines
 				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))

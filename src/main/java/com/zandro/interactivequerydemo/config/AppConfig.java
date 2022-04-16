@@ -27,6 +27,11 @@ public class AppConfig {
 	public NewTopic words() {
 		return TopicBuilder.name("words").partitions(6).replicas(1).build();
 	}
+	
+	@Bean
+	public NewTopic testTopic() {
+		return TopicBuilder.name("testTopic").partitions(6).replicas(1).build();
+	}
 
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
 	public KafkaStreamsConfiguration kafkaStreamsConfiguration(KafkaProperties properties) throws UnknownHostException {
@@ -35,7 +40,8 @@ public class AppConfig {
 			StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers().size() > 0
 							? properties.getBootstrapServers().get(0)
 							: "localhost:9092", 
-			StreamsConfig.APPLICATION_SERVER_CONFIG, InetAddress.getLocalHost().getHostAddress() + ":" + port
+			StreamsConfig.APPLICATION_SERVER_CONFIG, InetAddress.getLocalHost().getHostAddress() + ":" + port,
+			StreamsConfig.STATE_DIR_CONFIG, "tempdata/user-state"
 		));
 	}
 	

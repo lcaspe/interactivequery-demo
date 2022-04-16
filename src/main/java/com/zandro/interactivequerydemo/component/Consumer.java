@@ -13,7 +13,13 @@ public class Consumer {
 
 	@KafkaListener(topics = { "streams-wordcount-output" }, groupId = "kafka-streams-iq")
 	public void consume(ConsumerRecord<String, Long> record) {
-		LOGGER.info(String.format("Consuming => { key: %s value: %d }", record.key(), record.value()));
+		LOGGER.info(String.format("Consuming => { key: %s, value: %d }", record.key(), record.value()));
+	}
+
+	@KafkaListener(topics = {
+			"testTopic" }, groupId = "test-topic", containerFactory = "testTopicKafkaListenerContainerFactory")
+	public void consumeFromTestTopic(ConsumerRecord<String, String> record) {
+		LOGGER.info("Consuming from test topic => { key: {}, value: {} }", record.key(), record.value());
 	}
 
 }
