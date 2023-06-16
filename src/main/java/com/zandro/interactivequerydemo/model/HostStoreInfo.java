@@ -3,15 +3,16 @@ package com.zandro.interactivequerydemo.model;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+/**
+ * 
+ * Object that contains host store info.
+ * 
+ * @author Lizandro Caspe
+ *
+ */
+@Data
 @AllArgsConstructor
 public class HostStoreInfo {
 
